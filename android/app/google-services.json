@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "77328628230",
+    "project_id": "passda-2559a",
+    "storage_bucket": "passda-2559a.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:77328628230:android:8269d3bffe81d332926187",
+        "android_client_info": {
+          "package_name": "com.example.passdata"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "77328628230-1oeb4jcu9jd8s3n0jjmmdl1lr17kbnkb.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC1AYxwL7fOCsuJkkgFMimtuFLFizinfcs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "77328628230-1oeb4jcu9jd8s3n0jjmmdl1lr17kbnkb.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
