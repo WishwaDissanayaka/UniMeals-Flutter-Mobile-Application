@@ -33,6 +33,6 @@ flutter:
   assets:
     - assets/ricecurry.png
     - assets/dsBuffer.png
-    - assets/logo.png 
+    # - assets/logo.png 
     - assets/cv.pdf
     - assets/backggg.jpg

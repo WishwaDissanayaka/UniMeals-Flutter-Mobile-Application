@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:passdata/content_screens/foodstores.dart';
 
 import 'package:passdata/content_screens/about_us_page.dart';
-import 'package:passdata/content_screens/customer_screens/customer_menu.dart';
 import 'package:passdata/content_screens/help_support_page.dart';
 
 import 'package:passdata/firebase_datapass/menus/customermenus.dart';

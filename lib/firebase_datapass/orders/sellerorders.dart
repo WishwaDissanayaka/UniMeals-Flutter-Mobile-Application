@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:passdata/firebase_datapass/orders/agentorders.dart';
-import 'package:passdata/firebase_datapass/orders/customerorders.dart';
 import 'package:passdata/services/firestore.dart';
 
 class SellerOrders extends StatefulWidget {
@@ -24,7 +23,7 @@ class _SellerOrdersState extends State<SellerOrders> {
       builder: (context) => AlertDialog(
         content: TextField(
           controller: textController,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: 'Add your personal notes here !',
           ),
         ),
@@ -87,7 +86,7 @@ class _SellerOrdersState extends State<SellerOrders> {
               itemBuilder: (context, index) {
                 // Get each individual doc
                 DocumentSnapshot document = notesList[index];
-                String docID = document.id;
+                //String docID = document.id;
 
                 // Get note from each doc
                 Map<String, dynamic> data = document.data() as Map<String, dynamic>;
@@ -146,11 +145,11 @@ class _SellerOrdersState extends State<SellerOrders> {
               ),
             );
           },
-          child: const Text('Call Agent', style: TextStyle(fontSize: 20.0)),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             backgroundColor: Colors.red,
           ),
+          child: const Text('Call Agent', style: TextStyle(fontSize: 20.0)),
         ),
       ),
     );

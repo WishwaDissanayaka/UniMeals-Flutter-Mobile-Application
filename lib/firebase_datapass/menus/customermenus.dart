@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:passdata/firebase_datapass/orders/customerorders.dart';
 
+import 'package:passdata/firebase_datapass/orders/customerorders.dart';
 import 'package:passdata/services/firestore.dart';
 
 class Customermenus extends StatefulWidget {
@@ -24,7 +24,7 @@ class _CustomermenusState extends State<Customermenus> {
         builder: (context) => AlertDialog(
               content: TextField(
                 controller: textController, 
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: 'Add your personal notes here !',
                   ),
                ),
@@ -81,7 +81,7 @@ class _CustomermenusState extends State<Customermenus> {
             return GridView.builder(
               padding: const EdgeInsets.all(8.0), // Add padding around the GridView
               itemCount: notesList.length,
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2, // Number of columns
                 crossAxisSpacing: 8.0, // Horizontal spacing between tiles
                 mainAxisSpacing: 8.0, // Vertical spacing between tiles
@@ -90,7 +90,7 @@ class _CustomermenusState extends State<Customermenus> {
               itemBuilder: (context, index) {
                 // get each individual doc
                 DocumentSnapshot document = notesList[index];
-                String docID = document.id;
+                //String docID = document.id;
 
                 // get note from each doc
                 Map<String, dynamic> data = document.data() as Map<String, dynamic>;
@@ -142,12 +142,12 @@ class _CustomermenusState extends State<Customermenus> {
                       builder: (context) => const CustomerOrders(),
                     ));
           },
-          child: const Text('Order Now', style: TextStyle(fontSize: 20.0)),
           style: ElevatedButton.styleFrom(
             padding: const EdgeInsets.symmetric(vertical: 16.0),
             backgroundColor: Colors.red, // Increase button height
            //primary: Colors.green, // Button background color
           ),
+          child: const Text('Order Now', style: TextStyle(fontSize: 20.0)),
         ),
       ),
     );
