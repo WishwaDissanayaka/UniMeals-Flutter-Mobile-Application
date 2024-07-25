@@ -121,14 +121,10 @@ class SellerOrdersService {
 
 /////////////////////////////////  CUSTOMER DATABASES ////////////////
 
-//s CUSTOMER ORDERS
-
 class CustomerOrderService {
-  //get collection of notes
-  final CollectionReference notes =
-      FirebaseFirestore.instance.collection('CustomerOrders');
+  final CollectionReference notes = FirebaseFirestore.instance.collection('CustomerOrders');
+  final CollectionReference doneNotes = FirebaseFirestore.instance.collection('DoneOrders');
 
-  //Create
   Future<void> addNote(String note) {
     return notes.add({
       'note': note,
@@ -136,13 +132,10 @@ class CustomerOrderService {
     });
   }
 
-  //Read: get notes from database
   Stream<QuerySnapshot> getNotesStream() {
-    final notesSream = notes.orderBy('timestamp', descending: true).snapshots();
-    return notesSream;
+    return notes.orderBy('timestamp', descending: true).snapshots();
   }
 
-  //Update: update notes given a doc id
   Future<void> updateNote(String docID, String newNote) {
     return notes.doc(docID).update({
       'note': newNote,
@@ -150,11 +143,27 @@ class CustomerOrderService {
     });
   }
 
-  //Delete : Delete notes given a doc ID
   Future<void> deleteNote(String docID) {
     return notes.doc(docID).delete();
   }
+
+  Future<void> moveToDoneOrders(String docID, String note) {
+    return doneNotes.add({
+      'note': note,
+      'timestamp': Timestamp.now(),
+    }).then((_) {
+      deleteNote(docID);
+    });
+  }
+
+  Stream<QuerySnapshot> getDoneNotesStream() {
+    return doneNotes.orderBy('timestamp', descending: true).snapshots();
+  }
 }
+
+
+
+
 
 
 /////////////////////// AGENT /////////////////
@@ -190,4 +199,8 @@ class AgentOrderService {
   Future<void> deleteNote(String docID) {
     return notes.doc(docID).delete();
   }
+
+  void addConfirmedRequest(String note) {}
+
+  getConfirmedNotesStream() {}
 }

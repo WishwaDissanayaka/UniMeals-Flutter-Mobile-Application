@@ -2,26 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:passdata/services/firestore.dart';
 
-class AgentOrders extends StatefulWidget {
-  const AgentOrders({super.key});
+class AgentOrderstoagent extends StatefulWidget {
+  const AgentOrderstoagent({super.key});
 
   @override
-  State<AgentOrders> createState() => _AgentOrdersState();
+  State<AgentOrderstoagent> createState() => _AgentOrderstoagentState();
 }
 
-class _AgentOrdersState extends State<AgentOrders> {
-  // Firestore service
+class _AgentOrderstoagentState extends State<AgentOrderstoagent> {
   final AgentOrderService agentorderService = AgentOrderService();
-  // Text controllers
   final TextEditingController shopNameController = TextEditingController();
   final TextEditingController telNoController = TextEditingController();
-  // Time controller
   TimeOfDay? selectedTime;
-
-  // Map to track the confirmation state of each document
   Map<String, bool> confirmationStates = {};
 
-  // Open a dialog box to add or update a note
   void openNoteBox({String? docID}) {
     showDialog(
       context: context,
@@ -71,24 +65,18 @@ class _AgentOrdersState extends State<AgentOrders> {
         actions: [
           ElevatedButton(
             onPressed: () {
-              // Combine the fields into one string
               final combinedNote =
                   'Shop: ${shopNameController.text}, Tel: ${telNoController.text}, Time: ${selectedTime?.format(context) ?? 'No time'}';
 
-              // Add a new note
               if (docID == null) {
                 agentorderService.addNote(combinedNote);
-              } 
-              // Update an existing note
-              else {
+              } else {
                 agentorderService.updateNote(docID, combinedNote);
               }
 
-              // Clear the text controllers and reset the time
               shopNameController.clear();
               telNoController.clear();
               selectedTime = null;
-              // Close the dialog box
               Navigator.pop(context);
             },
             child: const Text("Add"),
@@ -96,6 +84,22 @@ class _AgentOrdersState extends State<AgentOrders> {
         ],
       ),
     );
+  }
+
+  void _confirmRequest(String docID, String noteText) async {
+    // Create a new document in 'donebyagents'
+    await FirebaseFirestore.instance.collection('donebyagents').add({
+      'note': noteText,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    // Update the confirmation state
+    setState(() {
+      confirmationStates[docID] = true;
+    });
+
+    // Optionally: You might want to remove the document from the current collection if it's no longer needed
+    await FirebaseFirestore.instance.collection('agentorders').doc(docID).delete();
   }
 
   @override
@@ -123,84 +127,90 @@ class _AgentOrdersState extends State<AgentOrders> {
       body: StreamBuilder<QuerySnapshot>(
         stream: agentorderService.getNotesStream(),
         builder: (context, snapshot) {
-          // If we have the data, get all the docs
           if (snapshot.hasData) {
             List notesList = snapshot.data!.docs;
 
-            // Display as List
             return ListView.builder(
-              padding: const EdgeInsets.all(8.0), // Add padding around the ListView
+              padding: const EdgeInsets.all(8.0),
               itemCount: notesList.length,
               itemBuilder: (context, index) {
-                // Get each individual doc
                 DocumentSnapshot document = notesList[index];
                 String docID = document.id;
 
-                // Get note from each doc
                 Map<String, dynamic> data = document.data() as Map<String, dynamic>;
                 String noteText = data['note'];
 
-                // Get the confirmation state of this document
                 bool isConfirmed = confirmationStates[docID] ?? false;
 
-                // Split the combined note into separate fields
                 List<String> noteParts = noteText.split(', ');
                 String shopName = noteParts[0].replaceFirst('Shop: ', '');
                 String telNo = noteParts[1].replaceFirst('Tel: ', '');
                 String time = noteParts[2].replaceFirst('Time: ', '');
 
-                // Display as a decorated list item
                 return Card(
-                  elevation: 5.0, // Add elevation for shadow effect
-                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0), // Add margin between cards
+                  elevation: 5.0,
+                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15.0), // Rounded corners
+                    borderRadius: BorderRadius.circular(15.0),
                   ),
                   child: Container(
-                    color: isConfirmed ? Colors.green[50] : Colors.red[50], // Change color based on confirmation
+                    color: isConfirmed ? Colors.green[50] : Colors.red[50],
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         ListTile(
-                          contentPadding: const EdgeInsets.all(10.0), // Add padding inside the ListTile
-                          leading: const Icon(Icons.notifications, color: Colors.red), // Notification icon
+                          contentPadding: const EdgeInsets.all(10.0),
+                          leading: const Icon(Icons.notifications, color: Colors.red),
                           title: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
                                 'Shop: $shopName',
                                 style: const TextStyle(
-                                  fontSize: 18.0, // Font size
-                                  fontWeight: FontWeight.bold, // Bold text
-                                  color: Colors.black87, // Text color
+                                  fontSize: 18.0,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black87,
                                 ),
                               ),
                               Text(
                                 'Tel: $telNo',
                                 style: const TextStyle(
-                                  fontSize: 16.0, // Font size
-                                  color: Colors.black87, // Text color
+                                  fontSize: 16.0,
+                                  color: Colors.black87,
                                 ),
                               ),
                               Text(
                                 'Time: $time',
                                 style: const TextStyle(
-                                  fontSize: 16.0, // Font size
-                                  color: Colors.black87, // Text color
+                                  fontSize: 16.0,
+                                  color: Colors.black87,
                                 ),
                               ),
                             ],
                           ),
-                          trailing: IconButton(
-                            onPressed: () => agentorderService.deleteNote(docID),
-                            icon: const Icon(Icons.delete, color: Colors.red), // Red delete icon
-                          ),
                         ),
                         if (!isConfirmed)
                           Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1.0),
                             child: Row(
                               children: [
+                                const Spacer(),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    _confirmRequest(docID, noteText);
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color.fromARGB(255, 91, 162, 220),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(7),
+                                    ),
+                                    padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 15),
+                                  ),
+                                  child: const Text(
+                                    'Confirm the request',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                ),
                               ],
                             ),
                           ),
@@ -210,15 +220,11 @@ class _AgentOrdersState extends State<AgentOrders> {
                 );
               },
             );
-          } 
-          // If there is no data, return a message
-          else {
-            return const Center(child: Text("No notes.."));
+          } else {
+            return const Center(child: Text("Loading Agent Request from seller"));
           }
         },
       ),
     );
   }
 }
-
-

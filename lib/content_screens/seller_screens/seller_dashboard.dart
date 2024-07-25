@@ -1,12 +1,14 @@
+// ignore_for_file: prefer_const_constructors
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:passdata/content_screens/agent_screens/pdf_viewer.dart';
+import 'package:passdata/content_screens/agent_screens/other_hotels.dart';
+import 'package:passdata/common_components.dart/contact_admin.dart';
+import 'package:passdata/content_screens/seller_screens/available_agents.dart';
+import 'package:passdata/services/firestore.dart';
+import 'package:passdata/content_screens/seller_screens/seller_orders.dart';
 
-import 'package:passdata/content_screens/about_us_page.dart';
-import 'package:passdata/content_screens/help_support_page.dart';
-
-import 'package:passdata/firebase_datapass/orders/sellerorders.dart';
-import 'package:passdata/firebase_datapass/menus/sellermenus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +32,12 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
+
+
+
+
+
 class SellerDashboardScreen extends StatefulWidget {
   const SellerDashboardScreen({super.key});
 
@@ -39,282 +47,239 @@ class SellerDashboardScreen extends StatefulWidget {
 }
 
 class _SellerDashboardScreenState extends State<SellerDashboardScreen> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 2;
+
+  final List<String> _titles = [
+    'My Menus',
+    'Other Hotels',
+    'My Orders',
+    'Available Agents',
+    'Settings',
+    'Contact Admin'
+  ];
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == 6) {
+      Navigator.popUntil(context, ModalRoute.withName('/login'));
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+      Navigator.pop(context); // Close the drawer after selecting an item
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: RichText(
-          text: const TextSpan(
-            text: 'Seller Dashboard',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
-            children: [],
+
+        appBar: AppBar(
+        title: Text(
+          _titles[_selectedIndex],
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: const Color.fromARGB(255, 92, 247, 26),
-        centerTitle: true,
-        toolbarHeight: 100,
+        centerTitle: false,
+        toolbarHeight: 80,
       ),
-      body: _getWidgetForIndex(_selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+
+
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            // DrawerHeader(
+            //   decoration: const BoxDecoration(
+            //     color: Color.fromARGB(255, 255, 255, 255),
+            //   ),
+            //   child: const Text(
+            //     'Menu',
+            //     style: TextStyle(
+            //       color: Colors.black,
+            //       fontSize: 30,
+            //     ),
+            //   ),
+            // ),
+            ListTile(
+            ),
+            ListTile(
+              leading: const Icon(Icons.cookie),
+              title: const Text('My Orders'),
+              onTap: () => _onItemTapped(2),
+            ),
+            ListTile(
+              leading: const Icon(Icons.food_bank),
+              title: const Text('My Menus'),
+              onTap: () => _onItemTapped(0),
+            ),
+            
+            ListTile(
+              leading: const Icon(Icons.delivery_dining),
+              title: const Text('Available Agents'),
+              onTap: () => _onItemTapped(3),
+            ),
+            ListTile(
+              leading: const Icon(Icons.store_mall_directory),
+              title: const Text('Other Hotels'),
+              onTap: () => _onItemTapped(1),
+            ),
+            // ListTile(
+            //   leading: const Icon(Icons.settings),
+            //   title: const Text('Settings'),
+            //   onTap: () => _onItemTapped(4),
+            // ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Contact Admin'),
+              onTap: () => _onItemTapped(5),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Log out'),
+              onTap: () => _onItemTapped(6),
+            ),
+          ],
+        ),
+      ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: const <Widget>[
+          Sellermenus(),
+          MyPdfViewer(),
+          SellerOrdersPage(),
+          // SellerOrders(),
+          AvailableAgents(), // Placeholder for Agents Page
+          Center(child: Text('Settings Page')), // Placeholder for Settings Page
+          ProfileView(),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        onTap: _onItemTapped,
-        backgroundColor: const Color.fromARGB(255, 92, 247, 26),
-      ),
-    );
-  }
-
-  Widget _getWidgetForIndex(int index) {
-    switch (index) {
-      case 0:
-        return const SellerDashboardView();
-      case 1:
-        return const NotificationsView();
-      case 2:
-        return const ProfileView();
-      default:
-        return const Center(
-          child: Text('Invalid Page'),
-        );
-    }
-  }
-}
-
-class SellerDashboardView extends StatelessWidget {
-  const SellerDashboardView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildSellerDashboardButton(
-              Icons.food_bank,
-              'My Menus',
-              () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Sellermenus(),
-                    ));
-              },
-            ),
-            const SizedBox(width: 32), // Increase the spacing
-            _buildSellerDashboardButton(
-              Icons.store_mall_directory,
-              'Other Hotels',
-              () {
-                // Navigate to timetable screen
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const MyPdfViewer(),
-                    ));
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 25),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildSellerDashboardButton(
-              Icons.cookie,
-              'My Orders',
-              () {
-                Navigator.push(
-                     context,
-                     MaterialPageRoute(
-                       builder: (context) => const SellerOrders(),
-                     ));
-              },
-            ),
-            const SizedBox(width: 32), // Increase the spacing
-            _buildSellerDashboardButton(
-              Icons.delivery_dining,
-              'Agents',
-              () {
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //       builder: (context) => const PilotDashboardScreen(),
-                //     ));
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSellerDashboardButton(
-    IconData iconData,
-    String label,
-    VoidCallback onTap,
-  ) {
-    return SizedBox(
-      width: 150, // Set the width of the button
-      height: 150, // Set the height of the button
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20), // Set the border radius
-          ),
-          side: const BorderSide(color: Colors.black), // Add a black border
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              iconData,
-              size: 45, // Set the icon size
-              color: Colors.black, // Set the icon color
-            ),
-            const SizedBox(height: 5), // Adjust the spacing
-            Flexible(
-              // Added Flexible widget
-              child: Text(
-                label,
-                textAlign: TextAlign.center, // Center align the text
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold, // Set text weight to bold
-                  color: Colors.black,
-                ),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
 }
 
-class NotificationsView extends StatelessWidget {
-  const NotificationsView({super.key});
+
+
+
+class Sellermenus extends StatefulWidget {
+  const Sellermenus({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const Center();
-  }
+  State<Sellermenus> createState() => _SellermenusState();
 }
 
-class ProfileView extends StatelessWidget {
-  const ProfileView({super.key});
+class _SellermenusState extends State<Sellermenus> {
+  final SellerMenusService sellermenusService = SellerMenusService();
+  final TextEditingController foodNameController = TextEditingController();
+  final TextEditingController priceController = TextEditingController();
+
+  void openNoteBox({String? docID}) {
+    showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: foodNameController,
+                    decoration: const InputDecoration(
+                      hintText: 'Food Name',
+                    ),
+                  ),
+                  TextField(
+                    controller: priceController,
+                    decoration: const InputDecoration(
+                      hintText: 'Price',
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+                ],
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () {
+                    String combinedText =
+                        '${foodNameController.text} : Rs. ${priceController.text}';
+                    if (docID == null) {
+                      sellermenusService.addNote(combinedText);
+                    } else {
+                      sellermenusService.updateNote(docID, combinedText);
+                    }
+                    foodNameController.clear();
+                    priceController.clear();
+                    Navigator.pop(context);
+                  },
+                  child: const Text("Add"),
+                )
+              ],
+            ));
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'User Name: Developer',
-            style: TextStyle(fontSize: 20, color: Colors.black),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            '@ All Rights recerved  ',
-            style: TextStyle(fontSize: 20, color: Colors.black),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black,
-              backgroundColor: Colors.white,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 100),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              side: const BorderSide(color: Colors.black), // Add a black border
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const HelpSupportPage(),
-                ),
-              );
-            },
-            child: const Text(
-              'Help & Support',
-            ),
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black,
-              backgroundColor: Colors.white,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 120),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              side: const BorderSide(color: Colors.black), // Add a black border
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AboutUsPage(),
-                ),
-              );
-            },
-            child: const Text(
-              'About Us',
-            ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.blue,
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () {
-              Navigator.popUntil(context, ModalRoute.withName('/'));
-              // Implement log out functionality here
-            },
-            child: const Text(
-              'Log Out',
-            ),
-          ),
-        ],
+    return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        onPressed: openNoteBox,
+        child: const Icon(Icons.add),
+      ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: sellermenusService.getNotesStream(),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            List notesList = snapshot.data!.docs;
+
+            return ListView.builder(
+              padding: const EdgeInsets.all(8.0),
+              itemCount: notesList.length,
+              itemBuilder: (context, index) {
+                DocumentSnapshot document = notesList[index];
+                String docID = document.id;
+                Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+                String noteText = data['note'];
+
+                return Card(
+                  elevation: 5.0,
+                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15.0),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.all(10.0),
+                    tileColor: Colors.blueGrey[50],
+                    title: Text(
+                      noteText,
+                      style: const TextStyle(
+                        fontSize: 18.0,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          onPressed: () => openNoteBox(docID: docID),
+                          icon: const Icon(Icons.settings),
+                        ),
+                        IconButton(
+                          onPressed: () => sellermenusService.deleteNote(docID),
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            );
+          } else {
+            return const Center(
+              child: Text("Loading My Available Menus..."),
+            );
+          }
+        },
       ),
     );
   }

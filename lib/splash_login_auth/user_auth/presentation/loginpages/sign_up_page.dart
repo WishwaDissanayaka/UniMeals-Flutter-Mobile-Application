@@ -1,9 +1,13 @@
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously, prefer_final_fields
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+
 import 'package:passdata/splash_login_auth/user_auth/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:passdata/splash_login_auth/user_auth/presentation/loginpages/login_page.dart';
 import 'package:passdata/splash_login_auth/user_auth/presentation/widgets/form_container_widget.dart';
 import 'package:passdata/global/common/toast.dart';
+import 'package:passdata/common_components.dart/custom_app_bar.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -33,17 +37,16 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        title: Text("SignUp"),
-      ),
+
+      appBar: const CustomAppBar01(),
+      
       body: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
+              const Text(
                 "Sign Up",
                 style: TextStyle(fontSize: 27, fontWeight: FontWeight.bold),
               ),
@@ -147,7 +150,7 @@ class _SignUpPageState extends State<SignUpPage> {
     if (user != null) {
       showToast(message: "User is successfully created");
 
-      Navigator.pushNamed(context, "/loginasa");
+      Navigator.pushNamed(context, "/login");
     } else {
       showToast(message: "Some error happend");
     }

@@ -1,12 +1,14 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:passdata/content_screens/agent_screens/account_settings.dart';
 
-import 'package:passdata/content_screens/agent_screens/pdf_viewer.dart';
-import 'package:passdata/content_screens/about_us_page.dart';
-import 'package:passdata/content_screens/help_support_page.dart';
+
+import 'package:passdata/content_screens/agent_screens/other_hotels.dart';
+import 'package:passdata/common_components.dart/contact_admin.dart';
 import 'package:passdata/content_screens/agent_screens/agent_notes.dart';
 
-import 'package:passdata/firebase_datapass/orders/agentorders.dart';
+import 'package:passdata/firebase_datapass/orders/agentorders_toagent.dart';
+import 'package:passdata/firebase_datapass/orders/done_by_agent.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,11 +80,11 @@ class _AgentDashboardScreenState extends State<AgentDashboardScreen> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.settings),
-            label: 'Settings',
+            label: 'Account Settings',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.person),
-            label: 'Profile',
+            label: 'Contact Agent',
           ),
         ],
         currentIndex: _selectedIndex,
@@ -98,7 +100,7 @@ class _AgentDashboardScreenState extends State<AgentDashboardScreen> {
       case 0:
         return const AgentDashboardView();
       case 1:
-        return const NotificationsView();
+        return const AccountSettings();
       case 2:
         return const ProfileView();
       default:
@@ -128,7 +130,7 @@ class AgentDashboardView extends StatelessWidget {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const AgentOrders(),
+                      builder: (context) => const AgentOrderstoagent(),
                     ));
               },
             ),
@@ -155,11 +157,11 @@ class AgentDashboardView extends StatelessWidget {
               Icons.done_all_sharp,
               'Done Orders',
               () {
-                // Navigator.push(
-                //     context,
-                //     MaterialPageRoute(
-                //       builder: (context) => const AgentOrders(),
-                //     ));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const DoneByAgent(),
+                    ));
 
               },
             ),
@@ -220,105 +222,6 @@ class AgentDashboardView extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class NotificationsView extends StatelessWidget {
-  const NotificationsView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center();
-  }
-}
-
-class ProfileView extends StatelessWidget {
-  const ProfileView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'User Name: Developer',
-            style: TextStyle(fontSize: 20, color: Colors.black),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            '@ All Rights recerved  ',
-            style: TextStyle(fontSize: 20, color: Colors.black),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black,
-              backgroundColor: Colors.white,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 100),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              side: const BorderSide(color: Colors.black), // Add a black border
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const HelpSupportPage(),
-                ),
-              );
-            },
-            child: const Text(
-              'Help & Support',
-            ),
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black,
-              backgroundColor: Colors.white,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 120),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              side: const BorderSide(color: Colors.black), // Add a black border
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AboutUsPage(),
-                ),
-              );
-            },
-            child: const Text(
-              'About Us',
-            ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.blue,
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () {
-              Navigator.popUntil(context, ModalRoute.withName('/'));
-              // Implement log out functionality here
-            },
-            child: const Text(
-              'Log Out',
-            ),
-          ),
-        ],
       ),
     );
   }

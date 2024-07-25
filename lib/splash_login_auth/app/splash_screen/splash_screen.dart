@@ -1,4 +1,7 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
+import 'package:passdata/common_components.dart/custom_app_bar.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -25,38 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: RichText(
-          text: const TextSpan(
-            text: 'Uni',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 35,
-              fontWeight: FontWeight.bold,
-            ),
-            children: [
-              TextSpan(
-                text: 'Meals',
-                style: TextStyle(
-                  color: Color.fromARGB(255, 0, 0, 0),
-                  fontSize: 44,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              TextSpan(
-                text: '\nOrder any Meals arround You !',
-                style: TextStyle(
-                  color: Color.fromARGB(255, 0, 0, 0),
-                  fontSize: 19,
-                ),
-              ),
-            ],
-          ),
-        ),
-        backgroundColor: const Color.fromARGB(255, 92, 247, 26),
-        centerTitle: true,
-        toolbarHeight: 150,
-      ),
+      appBar: CustomAppBar01(),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -78,17 +50,19 @@ class _SplashScreenState extends State<SplashScreen> {
                   padding: const EdgeInsets.symmetric(
                     vertical: 15,
                   ),
-                  side: const BorderSide(color: Colors.black, width: 1),
+                  side: const BorderSide(color: Color.fromARGB(255, 255, 255, 255), width: 1),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  backgroundColor: Color.fromARGB(255, 92, 247, 26),
+                  backgroundColor: Color.fromARGB(193, 255, 255, 255),
                 ),
                 child: const Text(
                   'WELCOME TO UNIMEAL',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.black,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600, // Updated font weight
+                    fontFamily: 'Georgia', // Updated font family
+                    color: Color.fromARGB(255, 0, 30, 255),
                   ),
                 ),
               ),

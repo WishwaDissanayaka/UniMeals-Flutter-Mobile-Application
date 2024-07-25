@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_const_constructors
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -54,22 +56,22 @@ class _CustomerOrdersState extends State<CustomerOrders> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: RichText(
-          text: const TextSpan(
-            text: 'My Orders',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
-            children: [],
-          ),
-        ),
-        backgroundColor: const Color.fromARGB(255, 92, 247, 26),
-        centerTitle: true,
-        toolbarHeight: 100,
-      ),
+      // appBar: AppBar(
+      //   title: RichText(
+      //     text: const TextSpan(
+      //       text: 'My Orders',
+      //       style: TextStyle(
+      //         color: Colors.black,
+      //         fontSize: 30,
+      //         fontWeight: FontWeight.bold,
+      //       ),
+      //       children: [],
+      //     ),
+      //   ),
+      //   backgroundColor: const Color.fromARGB(255, 92, 247, 26),
+      //   centerTitle: true,
+      //   toolbarHeight: 100,
+      // ),
 
 
         floatingActionButton: FloatingActionButton(

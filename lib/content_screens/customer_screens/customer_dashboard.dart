@@ -1,13 +1,11 @@
+// ignore_for_file: prefer_const_constructors, use_build_context_synchronously, duplicate_ignore
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:passdata/content_screens/foodstores.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:passdata/content_screens/about_us_page.dart';
-import 'package:passdata/content_screens/help_support_page.dart';
-
-import 'package:passdata/firebase_datapass/menus/customermenus.dart';
-import 'package:passdata/firebase_datapass/orders/customerorders.dart';
-
+import 'package:passdata/common_components.dart/contact_admin.dart';
+import 'package:passdata/content_screens/customer_screens/customermenus.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,184 +34,248 @@ class CustomerDashboardScreen extends StatefulWidget {
 
   @override
   // ignore: library_private_types_in_public_api
-  _CustomerDashboardScreenState createState() =>
-      _CustomerDashboardScreenState();
+  _CustomerDashboardScreenState createState() => _CustomerDashboardScreenState();
 }
 
 class _CustomerDashboardScreenState extends State<CustomerDashboardScreen> {
   int _selectedIndex = 0;
 
+  final List<String> _titles = [
+    'Menus',
+    'Customize Orders',
+    'Contact Admin'
+  ];
+
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == 3) {
+      Navigator.popUntil(context, ModalRoute.withName('/login'));
+    } else {
+      setState(() {
+        _selectedIndex = index;
+      });
+      Navigator.pop(context); // Close the drawer after selecting an item
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: RichText(
-          text: const TextSpan(
-            text: 'Customer Dashboard',
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-            ),
-            children: [],
+        title: Text(
+          _titles[_selectedIndex],
+          style: const TextStyle(
+            color: Colors.black,
+            fontSize: 30,
+            fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: const Color.fromARGB(255, 92, 247, 26),
         centerTitle: true,
-        toolbarHeight: 100,
+        toolbarHeight: 80,
       ),
-      body: _getWidgetForIndex(_selectedIndex),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.dashboard),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            // ignore: prefer_const_constructors
+            ListTile(),
+            ListTile(
+              leading: const Icon(Icons.menu_book),
+              title: const Text('Menus'),
+              onTap: () => _onItemTapped(0),
+            ),
+            ListTile(
+              leading: const Icon(Icons.schedule),
+              title: const Text('Schedule Customize Orders'),
+              onTap: () => _onItemTapped(1),
+            ),
+            ListTile(
+              leading: const Icon(Icons.person),
+              title: const Text('Contact Admin'),
+              onTap: () => _onItemTapped(2),
+            ),
+            ListTile(
+              leading: const Icon(Icons.logout),
+              title: const Text('Log Out'),
+              onTap: () => _onItemTapped(3),
+            ),
+          ],
+        ),
+      ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: const <Widget>[
+          // CustomerDashboardView(),
+          Customermenus(),
+          ScheduledOrderingPage(), // Replace with actual widget
+          ProfileView(),
         ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Colors.blue,
-        onTap: _onItemTapped,
-        backgroundColor: const Color.fromARGB(255, 92, 247, 26),
       ),
     );
   }
+}
 
-  Widget _getWidgetForIndex(int index) {
-    switch (index) {
-      case 0:
-        return const CustomerDashboardView();
-      case 1:
-        return const NotificationsView();
-      case 2:
-        return const ProfileView();
-      default:
-        return const Center(
-          child: Text('Invalid Page'),
-        );
+
+
+
+
+
+
+//-------------------------Customer Sceduled Order--------------------------//
+
+
+
+class ScheduledOrderingPage extends StatefulWidget {
+  const ScheduledOrderingPage({super.key});
+
+  @override
+  State<ScheduledOrderingPage> createState() => _ScheduledOrderingPageState();
+}
+
+class _ScheduledOrderingPageState extends State<ScheduledOrderingPage> {
+  final TextEditingController foodNameController = TextEditingController();
+  final TextEditingController quantityController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  DateTime? scheduledDate;
+  TimeOfDay? scheduledTime;
+
+  final FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  void scheduleOrder() async {
+    if (foodNameController.text.isEmpty ||
+        quantityController.text.isEmpty ||
+        addressController.text.isEmpty ||
+        phoneController.text.isEmpty ||
+        scheduledDate == null ||
+        scheduledTime == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    DateTime scheduledDateTime = DateTime(
+      scheduledDate!.year,
+      scheduledDate!.month,
+      scheduledDate!.day,
+      scheduledTime!.hour,
+      scheduledTime!.minute,
+    );
+
+    await firestore.collection('scheduled_orders').add({
+      'foodName': foodNameController.text,
+      'quantity': int.parse(quantityController.text),
+      'address': addressController.text,
+      'phone': phoneController.text,
+      'scheduledDateTime': scheduledDateTime,
+      'timestamp': FieldValue.serverTimestamp(),
+    });
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Order scheduled successfully')),
+    );
+
+    // ignore: use_build_context_synchronously
+    Navigator.pop(context);
+  }
+
+  Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != scheduledDate) {
+      setState(() {
+        scheduledDate = picked;
+      });
     }
   }
-}
 
-class CustomerDashboardView extends StatelessWidget {
-  const CustomerDashboardView({super.key});
+  Future<void> _selectTime(BuildContext context) async {
+    final TimeOfDay? picked = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.now(),
+    );
+    if (picked != null && picked != scheduledTime) {
+      setState(() {
+        scheduledTime = picked;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildCustomerDashboardButton(
-              Icons.food_bank,
-              'Menu',
-              () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const Customermenus(),
-                    ));
-              },
-            ),
-            const SizedBox(width: 32), // Increase the spacing
-            _buildCustomerDashboardButton(
-              Icons.store_mall_directory,
-              'Hotels & Resturents',
-              () {
-                // Navigate to timetable screen
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const FoodstoresScreen(),
-                    ));
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 25),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _buildCustomerDashboardButton(
-              Icons.schedule,
-              'Sceduled Orders',
-              () {
-                    //       Navigator.push(
-                    // context,
-                    // MaterialPageRoute(
-                    //   builder: (context) => const Customermenus(),
-                    // ));
-              },
-            ),
-            const SizedBox(width: 32), // Increase the spacing
-            _buildCustomerDashboardButton(
-              Icons.history,
-              'My Orders',
-              () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CustomerOrders(),
-                    ));
-              },
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCustomerDashboardButton(
-    IconData iconData,
-    String label,
-    VoidCallback onTap,
-  ) {
-    return SizedBox(
-      width: 150, // Set the width of the button
-      height: 150, // Set the height of the button
-      child: ElevatedButton(
-        onPressed: onTap,
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20), // Set the border radius
-          ),
-          side: const BorderSide(color: Colors.black), // Add a black border
-        ),
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(
-              iconData,
-              size: 45, // Set the icon size
-              color: Colors.black, // Set the icon color
+            TextField(
+              controller: foodNameController,
+              decoration: const InputDecoration(
+                labelText: 'Reqiured Food Details',
+                border: OutlineInputBorder(),
+              ),
             ),
-            const SizedBox(height: 5), // Adjust the spacing
-            Flexible(
-              // Added Flexible widget
-              child: Text(
-                label,
-                textAlign: TextAlign.center, // Center align the text
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold, // Set text weight to bold
-                  color: Colors.black,
+            const SizedBox(height: 16),
+            TextField(
+              controller: quantityController,
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                labelText: 'Quantity',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: addressController,
+              decoration: const InputDecoration(
+                labelText: 'Address',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            TextField(
+              controller: phoneController,
+              keyboardType: TextInputType.phone,
+              decoration: const InputDecoration(
+                labelText: 'Phone Number',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _selectDate(context),
+                    child: const Text('Select Date'),
+                  ),
                 ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _selectTime(context),
+                    child: const Text('Select Time'),
+                  ),
+                ),
+              ],
+            ),
+            const Spacer(),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: scheduleOrder,
+                style: ElevatedButton.styleFrom(
+                  foregroundColor: Colors.white, backgroundColor: Color.fromARGB(255, 25, 196, 33), // Set the text color to white
+                  padding: const EdgeInsets.symmetric(vertical: 16.0), // Adjust padding as needed
+                  textStyle: const TextStyle(fontSize: 18), // Adjust text style as needed
+                ),
+                child: const Text('SCHEDULE ORDER'),
               ),
             ),
           ],
@@ -223,101 +285,3 @@ class CustomerDashboardView extends StatelessWidget {
   }
 }
 
-class NotificationsView extends StatelessWidget {
-  const NotificationsView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center();
-  }
-}
-
-class ProfileView extends StatelessWidget {
-  const ProfileView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'User Name: Developer',
-            style: TextStyle(fontSize: 20, color: Colors.black),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            '@ All Rights recerved  ',
-            style: TextStyle(fontSize: 20, color: Colors.black),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black,
-              backgroundColor: Colors.white,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 100),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              side: const BorderSide(color: Colors.black), // Add a black border
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const HelpSupportPage(),
-                ),
-              );
-            },
-            child: const Text(
-              'Help & Support',
-            ),
-          ),
-          const SizedBox(height: 10),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.black,
-              backgroundColor: Colors.white,
-              padding:
-                  const EdgeInsets.symmetric(vertical: 20, horizontal: 120),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              side: const BorderSide(color: Colors.black), // Add a black border
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const AboutUsPage(),
-                ),
-              );
-            },
-            child: const Text(
-              'About Us',
-            ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              foregroundColor: Colors.white,
-              backgroundColor: Colors.blue,
-              padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 30),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-            onPressed: () {
-              Navigator.popUntil(context, ModalRoute.withName('/'));
-              // Implement log out functionality here
-            },
-            child: const Text(
-              'Log Out',
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
